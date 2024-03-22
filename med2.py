@@ -3,6 +3,7 @@ import streamlit as st
 from pandas.api.types import is_datetime64_any_dtype, is_object_dtype
 from pandas.api.types import CategoricalDtype
 import tempfile
+import openpyxl
 
 def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
     filtered_df = df.copy()
@@ -34,12 +35,14 @@ def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
 def make_clickable(url):
     return f'<a href="{url}" target="_blank">{url}</a>'
 
+# Set Streamlit page configuration
 st.set_page_config(
     page_title="Hematology & Oncology Field Medical Insights Report",
     page_icon=":bar_chart:",
     layout="wide"
 )
 
+# Upload Excel file
 uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
 
 if uploaded_file is not None:
@@ -48,11 +51,11 @@ if uploaded_file is not None:
         with open(tmp_file_path, "wb") as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
 
-        df = pd.read_excel(tmp_file_path)
+        try:
+            df = pd.read_excel(tmp_file_path)
 
-        filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
-        if len(filter_columns) > 0:
-            df = filter_dataframe(df, filter_columns)
+            filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
+            if len(filter_columns) > 0:
+                df = filter_dataframe(df, filter_columns)
 
-        st.dataframe(df)
-
+            st.dataframe(df)
