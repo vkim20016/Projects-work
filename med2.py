@@ -57,4 +57,4 @@ if uploaded_file is not None:
             filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
             if len(filter_columns) > 0:
                 df = filter_dataframe(df, filter_columns)
-                st.dataframe(df)
+               
