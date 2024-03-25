@@ -4,6 +4,8 @@ from pandas.api.types import is_datetime64_any_dtype, is_object_dtype
 from pandas.api.types import CategoricalDtype
 import tempfile
 from openpyxl import Workbook, load_workbook
+import subprocess
+subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/requirements.txt'])
 
 def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
     filtered_df = df.copy()
