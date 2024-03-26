@@ -64,7 +64,7 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"An error occurred: {e}")
             embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
-from langchain.document_loaders.csv_loader import CSVLoader
+from langchain.document_loaders.excel_loader import ExcelLoader
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.llms import CTransformers
@@ -84,10 +84,10 @@ def load_llm():
     return llm
 
 # Set the title for the Streamlit app
-st.title("Llama2 Chat CSV - 🦜🦙")
+st.title("Llama2 Chat Excel - 🦜🦙")
 
 # Create a file uploader in the sidebar
-uploaded_file = st.sidebar.file_uploader("Upload File", type="csv")
+uploaded_file = st.sidebar.file_uploader("Upload File", type=["csv", "xlsx"])
 
 # Handle file upload
 if uploaded_file:
@@ -95,8 +95,8 @@ if uploaded_file:
         tmp_file.write(uploaded_file.getvalue())
         tmp_file_path = tmp_file.name
 
-    # Load CSV data using CSVLoader
-    loader = CSVLoader(file_path=tmp_file_path, encoding="utf-8", csv_args={'delimiter': ','})
+    # Load Excel data using ExcelLoader
+    loader = ExcelLoader(file_path=tmp_file_path, sheet_name="Sheet1")
     data = loader.load()
 
     # Create embeddings using Sentence Transformers
@@ -124,10 +124,10 @@ if uploaded_file:
 
     # Initialize messages
     if 'generated' not in st.session_state:
-        st.session_state['generated'] = ["Hello ! Ask me(LLAMA2) about " + uploaded_file.name + " 🤗"]
+        st.session_state['generated'] = ["Hello! Ask me (LLAMA2) about " + uploaded_file.name + " 🤗"]
 
     if 'past' not in st.session_state:
-        st.session_state['past'] = ["Hey ! 👋"]
+        st.session_state['past'] = ["Hey! 👋"]
 
     # Create containers for chat history and user input
     response_container = st.container()
@@ -136,7 +136,7 @@ if uploaded_file:
     # User input form
     with container:
         with st.form(key='my_form', clear_on_submit=True):
-            user_input = st.text_input("Query:", placeholder="Talk to csv data 👉 (:", key='input')
+            user_input = st.text_input("Query:", placeholder="Talk to Excel data 👉 (:", key='input')
             submit_button = st.form_submit_button(label='Send')
 
         if submit_button and user_input:
