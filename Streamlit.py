@@ -64,7 +64,9 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"An error occurred: {e}")
             embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
-from langchain.document_loaders.excel_loader import ExcelLoader
+from langchain_community.document_loaders import UnstructuredExcelLoader
+import streamlit as st
+import tempfile
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.llms import CTransformers
@@ -95,15 +97,16 @@ if uploaded_file:
         tmp_file.write(uploaded_file.getvalue())
         tmp_file_path = tmp_file.name
 
-    # Load Excel data using ExcelLoader
-    loader = ExcelLoader(file_path=tmp_file_path, sheet_name="Sheet1")
-    data = loader.load()
+    # Load Excel data using UnstructuredExcelLoader
+    loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
+    docs = loader.load()
+    doc = docs[0]  # Access the first document in the list
 
     # Create embeddings using Sentence Transformers
     embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
 
     # Create a FAISS vector store and save embeddings
-    db = FAISS.from_documents(data, embeddings)
+    db = FAISS.from_documents([doc], embeddings)  # Pass the document as a list
     db.save_local(DB_FAISS_PATH)
 
     # Load the language model
@@ -148,5 +151,5 @@ if uploaded_file:
     if st.session_state['generated']:
         with response_container:
             for i in range(len(st.session_state['generated'])):
-                message(st.session_state["past"][i], is_user=True, key=str(i) + '_user', avatar_style="big-smile")
-                message(st.session_state["generated"][i], key=str(i), avatar_style="thumbs")
+                st.write(st.session_state["past"][i], key=str(i) + '_user')
+                st.write(st.session_state["generated"][i], key=str(i))
