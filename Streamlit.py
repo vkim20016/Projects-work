@@ -18,8 +18,12 @@ import os
 DB_FAISS_PATH = 'vectorstore/db_faiss'
 
 # Upload Excel file
+import streamlit as st
+import pandas as pd
+import tempfile
+
 uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
-# Load Excel data using UnstructuredExcelLoader
+
 if uploaded_file is not None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_file_path = f"{tmp_dir}/uploaded_file.xlsx"
@@ -38,6 +42,7 @@ if uploaded_file is not None:
             loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
             docs = loader.load()
             doc = docs[0]  # Access the first document in the list
+
         except Exception as e:
             st.error(f"An error occurred: {e}")
   
