@@ -18,7 +18,9 @@ import os
 DB_FAISS_PATH = 'vectorstore/db_faiss'
 
 # Load Excel data using UnstructuredExcelLoader
-data = pd.read_excel('file_path', engine='openpyxl')
+loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
+docs = loader.load()
+docs[0]
 
 # Create embeddings using Sentence Transformers
 embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
