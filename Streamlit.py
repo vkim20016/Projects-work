@@ -6,6 +6,7 @@ import tempfile
 from openpyxl import Workbook, load_workbook
 import subprocess
 from datetime import datetime
+import replicate
 
 subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/requirements.txt'])
 
