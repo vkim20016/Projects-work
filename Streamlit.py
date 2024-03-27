@@ -52,7 +52,8 @@ if uploaded_file is not None:
             df = pd.read_excel(tmp_file_path)
 
             filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
-    
+    if len(filter_columns) > 0:
+                df = filter_dataframe(df, filter_columns)
 
             st.dataframe(df)
         except Exception as e:
