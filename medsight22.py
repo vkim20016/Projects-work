@@ -3,12 +3,8 @@ import streamlit as st
 from pandas.api.types import is_datetime64_any_dtype, is_object_dtype
 from pandas.api.types import CategoricalDtype
 import tempfile
-from openpyxl import Workbook, load_workbook
-import subprocess
-subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/requirements.txt'])
-ef filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
+def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
     filtered_df = df.copy()
-
     # Try to convert datetimes into a standard format (datetime, no timezone)
     for col in filtered_df.columns:
         if is_object_dtype(filtered_df[col]):
@@ -18,7 +14,6 @@ ef filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
                 pass
         if is_datetime64_any_dtype(filtered_df[col]):
             filtered_df[col] = filtered_df[col].dt.tz_localize(None)
-
     for column in filter_columns:
         with st.expander(f"Filter by {column}", expanded=False):
             if isinstance(filtered_df[column].dtype, CategoricalDtype) or filtered_df[column].nunique() < 10000:
@@ -30,27 +25,21 @@ ef filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
                 )
                 if len(selected_values) > 0:
                     filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
-
     return filtered_df
-
 def make_clickable(url):
     return f'<a href="{url}" target="_blank">{url}</a>'
 # Upload Excel file
 uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
-
 if uploaded_file is not None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_file_path = f"{tmp_dir}/uploaded_file.xlsx"
         with open(tmp_file_path, "wb") as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
-
         try:
             df = pd.read_excel(tmp_file_path)
-
             filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
             if len(filter_columns) > 0:
                 df = filter_dataframe(df, filter_columns)
-
             st.dataframe(df)
         except Exception as e:
             st.error(f"An error occurred: {e}")
