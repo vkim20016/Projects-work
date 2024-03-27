@@ -57,7 +57,7 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"An error occurred: {e}")
 with st.sidebar:
-    st.title('🦙💬 Medical Insight Chatbot')
+    st.title('💬 Medical Insight Chatbot')
     if 'REPLICATE_API_TOKEN' in st.secrets:
         st.success('API key already provided!', icon='✅')
         replicate_api = st.secrets['REPLICATE_API_TOKEN']
