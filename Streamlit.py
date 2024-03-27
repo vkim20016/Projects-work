@@ -16,22 +16,23 @@ import os
 
 # Define the path for generated embeddings
 DB_FAISS_PATH = 'vectorstore/db_faiss'
- # Load Excel data using UnstructuredExcelLoader
-    loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
-    docs = loader.load()
-    doc = docs[0]  # Access the first document in the list
-# Create embeddings using Sentence Transformers
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
 
-    # Create a FAISS vector store and save embeddings
-    db = FAISS.from_documents(data, embeddings)
-    db.save_local(DB_FAISS_PATH)
+# Load Excel data using UnstructuredExcelLoader
+loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
+docs = loader.load()
+doc = docs[0]  # Access the first document in the list
+
+# Create embeddings using Sentence Transformers
+embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
+
+# Create a FAISS vector store and save embeddings
+db = FAISS.from_documents(data, embeddings)
+db.save_local(DB_FAISS_PATH)
 
 # Refactored from https://github.com/a16z-infra/llama2-chatbot
 # Models and parameters
 st.subheader('Models and parameters')
 selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['Llama2-7B', 'Llama2-13B', 'Llama2-70B'], key='selected_model')
-
 if selected_model == 'Llama2-7B':
     llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
 elif selected_model == 'Llama2-13B':
