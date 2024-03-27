@@ -6,8 +6,7 @@ import tempfile
 from openpyxl import Workbook, load_workbook
 import subprocess
 subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/requirements.txt'])
-
-def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
+ef filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
     filtered_df = df.copy()
 
     # Try to convert datetimes into a standard format (datetime, no timezone)
@@ -36,14 +35,6 @@ def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
 
 def make_clickable(url):
     return f'<a href="{url}" target="_blank">{url}</a>'
-
-# Set Streamlit page configuration
-st.set_page_config(
-    page_title="Hematology & Oncology Field Medical Insights Report",
-    page_icon=":bar_chart:",
-    layout="wide"
-)
-
 # Upload Excel file
 uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
 
