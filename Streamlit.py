@@ -62,38 +62,37 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"An error occurred: {e}")
 
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+       
 
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-  
+with st.sidebar:
+    st.title('🦙💬 Llama 2 Chatbot')
+    if 'REPLICATE_API_TOKEN' in st.secrets:
+        st.success('API key already provided!', icon='✅')
+        replicate_api = st.secrets['REPLICATE_API_TOKEN']
+    else:
+        replicate_api = st.text_input('Enter Replicate API token:', type='password')
+        if not (replicate_api.startswith('r8_') and len(replicate_api)==40):
+            st.warning('Please enter your credentials!', icon='⚠️')
+        else:
+            st.success('Proceed to entering your prompt message!', icon='👉')
 
+    # Refactored from https://github.com/a16z-infra/llama2-chatbot
+    st.subheader('Models and parameters')
+    selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['Llama2-7B', 'Llama2-13B', 'Llama2-70B'], key='selected_model')
+    if selected_model == 'Llama2-7B':
+        llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
+    elif selected_model == 'Llama2-13B':
+        llm = 'a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5'
+    else:
+        llm = 'replicate/llama70b-v2-chat:e951f18578850b652510200860fc4ea62b3b16fac280f83ff32282f87bbd2e48'
+    
+    temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
+    top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
+    max_length = st.sidebar.slider('max_length', min_value=64, max_value=4096, value=512, step=8)
+    
+    st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-a-llama-2-chatbot/)!')
+os.environ['REPLICATE_API_TOKEN'] = replicate_api
 
-# Create embeddings using Sentence Transformers
-embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
-
-# Create a FAISS vector store and save embeddings
-db = FAISS.from_documents(data, embeddings)
-db.save_local(DB_FAISS_PATH)
-
-# Refactored from https://github.com/a16z-infra/llama2-chatbot
-# Models and parameters
-st.subheader('Models and parameters')
-selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['Llama2-7B', 'Llama2-13B', 'Llama2-70B'], key='selected_model')
-if selected_model == 'Llama2-7B':
-    llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
-elif selected_model == 'Llama2-13B':
-    llm = 'a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5'
-else:
-    llm = 'replicate/llama70b-v2-chat:e951f18578850b652510200860fc4ea62b3b16fac280f83ff32282f87bbd2e48'
-
-temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
-top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
-max_length = st.sidebar.slider('max_length', min_value=64, max_value=4096, value=512, step=8)
-
-# Create a conversational chain
-chain = ConversationalRetrievalChain.from_llm(llm=llm, temperature=temperature, top_p=top_p, max_length=max_length)
 # Store LLM generated responses
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
@@ -139,8 +138,6 @@ if st.session_state.messages[-1]["role"] != "assistant":
             placeholder.markdown(full_response)
     message = {"role": "assistant", "content": full_response}
     st.session_state.messages.append(message)
-def make_clickable(url):
-    return f'<a href="{url}" target="_blank">{url}</a>'
 
 # Set Streamlit page configuration
 st.set_page_config(
