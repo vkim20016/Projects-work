@@ -55,7 +55,7 @@ if uploaded_file is not None:
             st.dataframe(df)
         except Exception as e:
             st.error(f"An error occurred: {e}")
-            st.error(f"An error occurred: {e}")
+            
 with st.sidebar:
     st.title('🦙💬 Medical Insight Chatbot')
     if 'REPLICATE_API_TOKEN' in st.secrets:
