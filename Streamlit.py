@@ -3,6 +3,7 @@ import streamlit as st
 from pandas.api.types import is_datetime64_any_dtype, is_object_dtype
 from pandas.api.types import CategoricalDtype
 import tempfile
+
 def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
     filtered_df = df.copy()
     # Try to convert datetimes into a standard format (datetime, no timezone)
@@ -26,8 +27,10 @@ def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
                 if len(selected_values) > 0:
                     filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
     return filtered_df
+
 def make_clickable(url):
     return f'<a href="{url}" target="_blank">{url}</a>'
+
 # Upload Excel file
 uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
 if uploaded_file is not None:
@@ -38,6 +41,8 @@ if uploaded_file is not None:
         try:
             df = pd.read_excel(tmp_file_path)
             filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
+            st.dataframe(df)
+        except Exception as e:
             st.error(f"An error occurred: {e}")
 with st.sidebar:
     st.title('🦙💬 Medical Insight Chatbot')
