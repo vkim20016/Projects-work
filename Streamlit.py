@@ -108,8 +108,7 @@ def generate_llama2_response(prompt_input):
     "replicate-internal/staging-llama-2-7b-mlc:97abc8ad2bbc7cac57aa04137990432e6eac5866860312bf708237a6a2358c6e",
      input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
                                   "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
-return output
-# User-provided prompt
+    return output
 if prompt := st.chat_input(disabled=not replicate_api):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
