@@ -61,11 +61,8 @@ if uploaded_file is not None:
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
-
-       
-
 with st.sidebar:
-    st.title('🦙💬 Llama 2 Chatbot')
+    st.title('🦙💬 Medical Insight Chatbot')
     if 'REPLICATE_API_TOKEN' in st.secrets:
         st.success('API key already provided!', icon='✅')
         replicate_api = st.secrets['REPLICATE_API_TOKEN']
@@ -90,6 +87,7 @@ with st.sidebar:
     top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
     max_length = st.sidebar.slider('max_length', min_value=64, max_value=4096, value=512, step=8)
     
+    st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-a-llama-2-chatbot/)!')
 os.environ['REPLICATE_API_TOKEN'] = replicate_api
 
 # Store LLM generated responses
@@ -137,25 +135,4 @@ if st.session_state.messages[-1]["role"] != "assistant":
             placeholder.markdown(full_response)
     message = {"role": "assistant", "content": full_response}
     st.session_state.messages.append(message)
-
-# Set Streamlit page configuration
-st.set_page_config(
-    page_title="Hematology & Oncology Field Medical Insights Report",
-    page_icon=":bar_chart:",
-    layout="wide"
-)
-# Set the title for the Streamlit app
-st.title("Medical Insights Chatbot")
-
-# Replicate Credentials
-with st.sidebar:
-    if 'REPLICATE_API_TOKEN' in st.secrets:
-        st.success('API key already provided!', icon='✅')
-        replicate_api = st.secrets['REPLICATE_API_TOKEN']
-    else:
-        replicate_api = st.text_input('Enter Replicate API token:', type='password')
-        if not (replicate_api.startswith('r8_') and len(replicate_api)==40):
-            st.warning('Please enter your credentials!', icon='⚠️')
-        else:
-            st.success('Proceed to entering your prompt message!', icon='👉')
-
+       
