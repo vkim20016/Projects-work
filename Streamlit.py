@@ -18,9 +18,28 @@ import os
 DB_FAISS_PATH = 'vectorstore/db_faiss'
 
 # Load Excel data using UnstructuredExcelLoader
-loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
-docs = loader.load()
-docs[0]
+if uploaded_file is not None:
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_file_path = f"{tmp_dir}/uploaded_file.xlsx"
+        with open(tmp_file_path, "wb") as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+
+        try:
+            df = pd.read_excel(tmp_file_path)
+
+            filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
+            if len(filter_columns) > 0:
+                df = filter_dataframe(df, filter_columns)
+
+            st.dataframe(df)
+
+            loader = UnstructuredExcelLoader(file_path=tmp_file_path, mode="elements")
+            docs = loader.load()
+            doc = docs[0]  # Access the first document in the list
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+  
+
 
 # Create embeddings using Sentence Transformers
 embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2', model_kwargs={'device': 'cpu'})
@@ -143,20 +162,3 @@ with st.sidebar:
         else:
             st.success('Proceed to entering your prompt message!', icon='👉')
 
-if uploaded_file is not None:
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_file_path = f"{tmp_dir}/uploaded_file.xlsx"
-        with open(tmp_file_path, "wb") as tmp_file:
-            tmp_file.write(uploaded_file.getvalue())
-
-        try:
-            df = pd.read_excel(tmp_file_path)
-
-            filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
-            if len(filter_columns) > 0:
-                df = filter_dataframe(df, filter_columns)
-
-            st.dataframe(df)
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-  
