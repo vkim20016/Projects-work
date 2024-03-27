@@ -104,10 +104,17 @@ def generate_llama2_response(prompt_input):
             string_dialogue += "User: " + dict_message["content"] + "\n\n"
         else:
             string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
-    output = replicate.run(llm, 
-                           input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
-                                  "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
-    return output
+    output = replicate.run(
+    "replicate-internal/staging-llama-2-7b-mlc:97abc8ad2bbc7cac57aa04137990432e6eac5866860312bf708237a6a2358c6e",
+    input={
+        "debug": False,
+        "top_p": 0.95,
+        "prompt": "A llama walks into a bar",
+        "temperature": 0.95,
+        "max_new_tokens": 500,
+        "min_new_tokens": -1,
+        "repetition_penalty": 1.15
+    }
 
 # User-provided prompt
 if prompt := st.chat_input(disabled=not replicate_api):
