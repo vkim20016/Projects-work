@@ -17,6 +17,8 @@ import os
 # Define the path for generated embeddings
 DB_FAISS_PATH = 'vectorstore/db_faiss'
 
+# Upload Excel file
+uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
 # Load Excel data using UnstructuredExcelLoader
 if uploaded_file is not None:
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -148,8 +150,7 @@ st.set_page_config(
 )
 # Set the title for the Streamlit app
 st.title("Medical Insights Chatbot")
-# Upload Excel file
-uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
+
 # Replicate Credentials
 with st.sidebar:
     if 'REPLICATE_API_TOKEN' in st.secrets:
