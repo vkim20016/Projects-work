@@ -14,14 +14,44 @@ from langchain.chains import ConversationalRetrievalChain
 import replicate
 import os
 
-# Define the path for generated embeddings
-DB_FAISS_PATH = 'vectorstore/db_faiss'
+ef filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
+    filtered_df = df.copy()
+
+    # Try to convert datetimes into a standard format (datetime, no timezone)
+    for col in filtered_df.columns:
+        if is_object_dtype(filtered_df[col]):
+            try:
+                filtered_df[col] = pd.to_datetime(filtered_df[col])
+            except Exception:
+                pass
+        if is_datetime64_any_dtype(filtered_df[col]):
+            filtered_df[col] = filtered_df[col].dt.tz_localize(None)
+
+    for column in filter_columns:
+        with st.expander(f"Filter by {column}", expanded=False):
+            if isinstance(filtered_df[column].dtype, CategoricalDtype) or filtered_df[column].nunique() < 10000:
+                unique_values = filtered_df[column].unique()
+                selected_values = st.multiselect(
+                    f"Values for {column}",
+                    unique_values,
+                    default=[],
+                )
+                if len(selected_values) > 0:
+                    filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
+
+    return filtered_df
+
+def make_clickable(url):
+    return f'<a href="{url}" target="_blank">{url}</a>'
+
+# Set Streamlit page configuration
+st.set_page_config(
+    page_title="Hematology & Oncology Field Medical Insights Report",
+    page_icon=":bar_chart:",
+    layout="wide"
+)
 
 # Upload Excel file
-import streamlit as st
-import pandas as pd
-import tempfile
-
 uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
 
 if uploaded_file is not None:
@@ -33,32 +63,11 @@ if uploaded_file is not None:
         try:
             df = pd.read_excel(tmp_file_path)
 
-            filtered_df = df.copy()
+            filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
+            if len(filter_columns) > 0:
+                df = filter_dataframe(df, filter_columns)
 
-            # Try to convert datetimes into a standard format (datetime, no timezone)
-            for col in filtered_df.columns:
-                if is_object_dtype(filtered_df[col]):
-                    try:
-                        filtered_df[col] = pd.to_datetime(filtered_df[col])
-                    except Exception:
-                        pass
-                if is_datetime64_any_dtype(filtered_df[col]):
-                    filtered_df[col] = filtered_df[col].dt.tz_localize(None)
-
-            for column in filter_columns:
-                with st.expander(f"Filter by {column}", expanded=False):
-                    if isinstance(filtered_df[column].dtype, CategoricalDtype) or filtered_df[column].nunique() < 10000:
-                        unique_values = filtered_df[column].unique()
-                        selected_values = st.multiselect(
-                            f"Values for {column}",
-                            unique_values,
-                            default=[],
-                        )
-                        if len(selected_values) > 0:
-                            filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
-
-            st.dataframe(filtered_df)
-
+            st.dataframe(df)
         except Exception as e:
             st.error(f"An error occurred: {e}")
 with st.sidebar:
