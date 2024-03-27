@@ -5,8 +5,10 @@ from pandas.api.types import CategoricalDtype
 import tempfile
 from openpyxl import Workbook, load_workbook
 import subprocess
-from datetime import datetime  # Add this line
+from datetime import datetime
+
 subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/requirements.txt'])
+
 def filter_dataframe(df: pd.DataFrame, filter_columns: list, start_date: datetime, end_date: datetime) -> pd.DataFrame:
     filtered_df = df.copy()
 
@@ -36,6 +38,10 @@ def filter_dataframe(df: pd.DataFrame, filter_columns: list, start_date: datetim
     filtered_df = filtered_df[(filtered_df['Date'] >= start_date) & (filtered_df['Date'] <= end_date)]
 
     return filtered_df
+
+# Upload Excel file
+uploaded_file = st.sidebar.file_uploader("Upload Excel file", type=["xlsx"])
+
 if uploaded_file is not None:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_file_path = f"{tmp_dir}/uploaded_file.xlsx"
@@ -55,7 +61,6 @@ if uploaded_file is not None:
             st.dataframe(df)
         except Exception as e:
             st.error(f"An error occurred: {e}")
-            
 with st.sidebar:
     st.title('🦙💬 Medical Insight Chatbot')
     if 'REPLICATE_API_TOKEN' in st.secrets:
