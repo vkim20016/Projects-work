@@ -51,9 +51,16 @@ if uploaded_file is not None:
         try:
             df = pd.read_excel(tmp_file_path)
 
-            filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns"
+            filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
+            start_date = st.sidebar.date_input("Start Date")
+            end_date = st.sidebar.date_input("End Date")
+
+            if len(filter_columns) > 0:
+                df = filter_dataframe(df, filter_columns, start_date, end_date)
+
             st.dataframe(df)
         except Exception as e:
+            st.error(f"An error occurred: {e}")
             st.error(f"An error occurred: {e}")
 with st.sidebar:
     st.title('🦙💬 Medical Insight Chatbot')
