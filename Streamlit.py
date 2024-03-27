@@ -9,7 +9,7 @@ from datetime import datetime
 
 subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/requirements.txt'])
 
-def filter_dataframe(df: pd.DataFrame, filter_columns: list, start_date: datetime, end_date: datetime) -> pd.DataFrame:
+def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
     filtered_df = df.copy()
 
     # Try to convert datetimes into a standard format (datetime, no timezone)
@@ -34,9 +34,6 @@ def filter_dataframe(df: pd.DataFrame, filter_columns: list, start_date: datetim
                 if len(selected_values) > 0:
                     filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
 
-    # Filter by date range
-    filtered_df = filtered_df[(filtered_df['Date'] >= start_date) & (filtered_df['Date'] <= end_date)]
-
     return filtered_df
 
 # Upload Excel file
@@ -52,12 +49,12 @@ if uploaded_file is not None:
             df = pd.read_excel(tmp_file_path)
 
             filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
-    if len(filter_columns) > 0:
+
+            if len(filter_columns) > 0:
                 df = filter_dataframe(df, filter_columns)
 
             st.dataframe(df)
         except Exception as e:
-            st.error(f"An error occurred: {e}")
             st.error(f"An error occurred: {e}")
 with st.sidebar:
     st.title('🦙💬 Medical Insight Chatbot')
