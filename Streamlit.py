@@ -33,31 +33,33 @@ if uploaded_file is not None:
         try:
             df = pd.read_excel(tmp_file_path)
 
-         filtered_df = df.copy()
+            filtered_df = df.copy()
 
-# Try to convert datetimes into a standard format (datetime, no timezone)
-for col in filtered_df.columns:
-    if is_object_dtype(filtered_df[col]):
-        try:
-            filtered_df[col] = pd.to_datetime(filtered_df[col])
-        except Exception:
-            pass
-    if is_datetime64_any_dtype(filtered_df[col]):
-        filtered_df[col] = filtered_df[col].dt.tz_localize(None)
+            # Try to convert datetimes into a standard format (datetime, no timezone)
+            for col in filtered_df.columns:
+                if is_object_dtype(filtered_df[col]):
+                    try:
+                        filtered_df[col] = pd.to_datetime(filtered_df[col])
+                    except Exception:
+                        pass
+                if is_datetime64_any_dtype(filtered_df[col]):
+                    filtered_df[col] = filtered_df[col].dt.tz_localize(None)
 
-for column in filter_columns:
-    with st.expander(f"Filter by {column}", expanded=False):
-        if isinstance(filtered_df[column].dtype, CategoricalDtype) or filtered_df[column].nunique() < 10000:
-            unique_values = filtered_df[column].unique()
-            selected_values = st.multiselect(
-                f"Values for {column}",
-                unique_values,
-                default=[],
-            )
-            if len(selected_values) > 0:
-                filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
+            for column in filter_columns:
+                with st.expander(f"Filter by {column}", expanded=False):
+                    if isinstance(filtered_df[column].dtype, CategoricalDtype) or filtered_df[column].nunique() < 10000:
+                        unique_values = filtered_df[column].unique()
+                        selected_values = st.multiselect(
+                            f"Values for {column}",
+                            unique_values,
+                            default=[],
+                        )
+                        if len(selected_values) > 0:
+                            filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
 
-return filtered_df
+            return filtered_df
+
+        except Exception as e:
             st.error(f"An error occurred: {e}")
   
 
