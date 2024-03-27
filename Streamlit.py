@@ -57,7 +57,10 @@ if uploaded_file is not None:
                         if len(selected_values) > 0:
                             filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
 
-            return filtered_df
+            st.dataframe(filtered_df)
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
