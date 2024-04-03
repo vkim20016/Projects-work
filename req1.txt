@@ -11,3 +11,4 @@ transformers
 sentence_transformers
 faiss-cpu
 ctransformers
+langchain-pinecone 0.0.3
