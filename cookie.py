@@ -6,8 +6,6 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.llms import CTransformers
 from langchain.chains import ConversationalRetrievalChain
-subprocess.call(['pip', 'install', '-r', 'https://raw.githubusercontent.com/vkim20016/Project-work/main/req1.txt'])
-
 # Define the path for generated embeddings
 DB_FAISS_PATH = 'vectorstore/db_faiss'
 
