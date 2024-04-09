@@ -1,0 +1,10 @@
+openpyxl==3.1.2 
+streamlit
+pandas
+replicate
+numpy
+pypdf
+langchain
+torch
+accelerate
+pandasai 2.0.30
