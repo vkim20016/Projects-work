@@ -1,6 +1,5 @@
 import streamlit as st
 import openai
-from openai import AzureOpenAI
 import os
 import json
 import random
@@ -14,8 +13,9 @@ import openpyxl
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 # Retrieve BMS OpenAI URLs
-OPENAI_URLS_CACHE_PATH = "set_your_own_cache_path.json" # '/local/path/to/saved/openai-urls.json'
+OPENAI_URLS_CACHE_PATH = "set_your_own_cache_path.json"  # '/local/path/to/saved/openai-urls.json'
 OPENAI_URLS_REMOTE_PATH = os.environ.get("OPENAI_URLS_REMOTE_PATH", "https://bms-openai-proxy-eus-prod.azu.bms.com/openai-urls.json")
 OPENAI_URLS_REFRESH_DAYS = 7
 user_api_key = st.sidebar.text_input(
@@ -70,8 +70,8 @@ def get_openai_urls(verbose=False, ttl_hash=None):
     return bms_openai_urls
 
 
-def get_ttl_hash(seconds=60*60):
-    """Returns the same value withing `seconds` time period"""
+def get_ttl_hash(seconds=60 * 60):
+    """Returns the same value within `seconds` time period"""
     return round(time.time() / seconds)
 
 
@@ -79,7 +79,7 @@ def get_endpoint_details(environment, model_name, model_version=None, num_endpoi
     """
     Return Azure OpenAI endpoint details that meet your environment, model, and version inputs.
     If no endpoint is found, return None.
-    If no model_version specified, returns all available 
+    If no model_version specified, returns all available
     If num_endpoints_desired exceeds the actual length, return all matching endpoints.
 
     Arguments:
@@ -90,16 +90,16 @@ def get_endpoint_details(environment, model_name, model_version=None, num_endpoi
         num_endpoints_desired: int, Optional
             Defaults to 1
 
-    Returns: 
+    Returns:
         dict (or list of dicts) containing keys like 'endpoint' and 'deployment_name'
     """
-    
+
     try:
         bms_openai_urls = get_openai_urls(ttl_hash=get_ttl_hash())
         endpoints = [e for e in bms_openai_urls[environment][model_name]]
         if model_version is not None:
             endpoints = [e for e in endpoints if model_version in e['model_version']]
-        
+
         if not endpoints:
             print(f"No results for combination: {environment}, {model_name}, {model_version}")
             return None
@@ -107,7 +107,7 @@ def get_endpoint_details(environment, model_name, model_version=None, num_endpoi
             if not num_endpoints_desired:
                 return random.choice(endpoints)
             else:
-                n = len(endpoints) if num_endpoints_desired>len(endpoints) else num_endpoints_desired
+                n = len(endpoints) if num_endpoints_desired > len(endpoints) else num_endpoints_desired
                 ep_return = []
                 for i in range(n):
                     ep_return.append(random.choice(endpoints))
@@ -115,7 +115,9 @@ def get_endpoint_details(environment, model_name, model_version=None, num_endpoi
     except KeyError as e:
         print(f"No deployments for model {e}")
         return None
-  # Function to convert Excel file to CSV
+
+
+# Function to convert Excel file to CSV
 def excel_to_csv(excel_file):
     # Load Excel file
     wb = openpyxl.load_workbook(excel_file)
@@ -128,6 +130,8 @@ def excel_to_csv(excel_file):
         df.to_csv(tmp_file.name, index=False, header=False)
         tmp_file_path = tmp_file.name
     return tmp_file_path
+
+
 uploaded_file = st.sidebar.file_uploader("Upload", type=["csv", "xlsx"])
 
 # Clear chat history button
@@ -158,7 +162,8 @@ if uploaded_file:
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
             tmp_file_path = tmp_file.name
-# Read the uploaded file into DataFrame
+
+    # Read the uploaded file into DataFrame
     try:
         df = pd.read_excel(uploaded_file)
 
@@ -182,3 +187,5 @@ if uploaded_file:
         loader = CSVLoader(file_path=tmp_file_path, encoding="utf-8")
         data = loader.load()
         chunks = text_splitter.split_documents(data)
+    except Exception as e:
+        st.write("An error occurred:", e)
