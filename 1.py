@@ -13,6 +13,36 @@ import openpyxl
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from pandas.api.types import is_object_dtype, is_datetime64_any_dtype
+from pandas.api.types import CategoricalDtype
+# Function to filter DataFrame based on selected columns
+def filter_dataframe(df: pd.DataFrame, filter_columns: list) -> pd.DataFrame:
+    filtered_df = df.copy()
+
+    # Try to convert datetimes into a standard format (datetime, no timezone)
+    for col in filtered_df.columns:
+        if is_object_dtype(filtered_df[col]):
+            try:
+                filtered_df[col] = pd.to_datetime(filtered_df[col])
+            except Exception:
+                pass
+        if is_datetime64_any_dtype(filtered_df[col]):
+            filtered_df[col] = filtered_df[col].dt.tz_localize(None)
+
+    # Display expanders for each selected column for filtering
+    for column in filter_columns:
+        with st.expander(f"Filter by {column}", expanded=False):
+            if isinstance(filtered_df[column].dtype, CategoricalDtype) or filtered_df[column].nunique() < 10000:
+                unique_values = filtered_df[column].unique()
+                selected_values = st.multiselect(
+                    f"Values for {column}",
+                    unique_values,
+                    default=[],
+                )
+                if len(selected_values) > 0:
+                    filtered_df = filtered_df[filtered_df[column].isin(selected_values)]
+
+    return filtered_df
 
 # Retrieve BMS OpenAI URLs
 OPENAI_URLS_CACHE_PATH = "set_your_own_cache_path.json"  # '/local/path/to/saved/openai-urls.json'
@@ -189,3 +219,27 @@ if uploaded_file:
         chunks = text_splitter.split_documents(data)
     except Exception as e:
         st.write("An error occurred:", e)
+         Set your Azure OpenAI config as normal
+os.environ["AZURE_OPENAI_API_VERSION"] = "2024-02-01"  # Check here for latest: https://learn.microsoft.com/en-us/azure/ai-services/openai/whats-new
+os.environ["AZURE_OPENAI_KEY"] = "YOUR_BMS_API_KEY"
+
+# We prepare our OpenAI payload as usual
+messages = [{'role': 'user', 'content': 'Summarize Bristol Myers Squibb in under 10 words.'}]
+
+max_retries = 3 # Keep it reasonable...
+for i in range(max_retries):
+	endpoint = get_endpoint_details('nonprod', 'gpt-35-turbo')
+	# endpoint = get_endpoint_details('nonprod', 'gpt-4-turbo')
+	# endpoint = get_endpoint_details('nonprod', 'gpt-4-turbo', '1106-preview')
+	azure_endpoint = endpoint['endpoint']
+    continue
+	except openai.RateLimitError as e:
+		# NOTE: You should add exponential backoff or a sleep here...
+		print("HTTP 429 received, trying another endpoint.")
+		print(e)
+		continue
+	except openai.APIStatusError as e:
+		print(e)
+		continue
+else:
+	print("Azure OpenAI call failed")
