@@ -8,7 +8,12 @@ import time
 from functools import lru_cache
 from datetime import datetime
 import requests
-
+import tempfile
+import pandas as pd
+import openpyxl
+from langchain.document_loaders.csv_loader import CSVLoader
+from langchain.vectorstores import FAISS
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 # Retrieve BMS OpenAI URLs
 OPENAI_URLS_CACHE_PATH = "set_your_own_cache_path.json" # '/local/path/to/saved/openai-urls.json'
 OPENAI_URLS_REMOTE_PATH = os.environ.get("OPENAI_URLS_REMOTE_PATH", "https://bms-openai-proxy-eus-prod.azu.bms.com/openai-urls.json")
@@ -110,3 +115,70 @@ def get_endpoint_details(environment, model_name, model_version=None, num_endpoi
     except KeyError as e:
         print(f"No deployments for model {e}")
         return None
+  # Function to convert Excel file to CSV
+def excel_to_csv(excel_file):
+    # Load Excel file
+    wb = openpyxl.load_workbook(excel_file)
+    # Assume only one sheet
+    sheet = wb.active
+    # Create DataFrame from sheet
+    df = pd.DataFrame(sheet.values)
+    # Write DataFrame to temporary CSV file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp_file:
+        df.to_csv(tmp_file.name, index=False, header=False)
+        tmp_file_path = tmp_file.name
+    return tmp_file_path
+uploaded_file = st.sidebar.file_uploader("Upload", type=["csv", "xlsx"])
+
+# Clear chat history button
+clear_history = st.sidebar.button("Clear Chat History")
+
+# Initialize session state variables
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
+
+if 'generated' not in st.session_state:
+    st.session_state['generated'] = []
+
+if 'past' not in st.session_state:
+    st.session_state['past'] = []
+
+# Clear chat history if button is clicked
+if clear_history:
+    st.session_state['history'] = []
+    st.session_state['generated'] = []
+    st.session_state['past'] = []
+
+if uploaded_file:
+    if uploaded_file.type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        # Convert Excel to CSV if uploaded file is Excel
+        tmp_file_path = excel_to_csv(uploaded_file)
+    else:
+        # Store uploaded CSV file directly
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_file_path = tmp_file.name
+# Read the uploaded file into DataFrame
+    try:
+        df = pd.read_excel(uploaded_file)
+
+        # Allow user to select columns for filtering
+        filter_columns = st.sidebar.multiselect("Filter dataframe on", df.columns, key="filter_columns")
+        if len(filter_columns) > 0:
+            df = filter_dataframe(df, filter_columns)
+
+        # Display DataFrame
+        st.dataframe(df)
+
+        # Initialize text splitter
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=300,
+            chunk_overlap=100,
+            length_function=len,
+            add_start_index=True,
+        )
+
+        # Load data into LangChain and split into chunks
+        loader = CSVLoader(file_path=tmp_file_path, encoding="utf-8")
+        data = loader.load()
+        chunks = text_splitter.split_documents(data)
