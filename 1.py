@@ -9,15 +9,6 @@ from functools import lru_cache
 from datetime import datetime
 import requests
 
-
-
-
-# Sidebar input for Azure OpenAI API key
-user_api_key = st.sidebar.text_input(
-    label="#### Your Azure OpenAI API key 👇",
-    placeholder="Paste your Azure OpenAI API key here",
-    type="password"
-)
 # Retrieve BMS OpenAI URLs
 OPENAI_URLS_CACHE_PATH = "set_your_own_cache_path.json" # '/local/path/to/saved/openai-urls.json'
 OPENAI_URLS_REMOTE_PATH = os.environ.get("OPENAI_URLS_REMOTE_PATH", "https://bms-openai-proxy-eus-prod.azu.bms.com/openai-urls.json")
